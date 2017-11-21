@@ -15,6 +15,10 @@ module.exports = sequelize => {
       foreignKey: 'friendId',
       onDelete: 'CASCADE'
     });
+    Interaction.belongsTo(models.User, {
+      foreignKey: 'userId',
+      onDelete: 'CASCADE'
+    });
   };
 
   return Interaction;

@@ -40,7 +40,22 @@ const retrieve = (req, res) => {
         include: [{ model: Interaction, as: 'interactions' }]
       }
     ]
-  }).then(user => res.status(200).json(user), err => res.status(400).send(err));
+  }).then(
+    user => {
+      user.friends = user.friends.map(friend => {
+        const lastDate = friend.interactions.length
+          ? friend.interactions[0].createdAt
+          : friend.createdAt;
+        friend.dataValues['strengthLost'] = Friend.calculateStrengthLost(
+          friend.decline,
+          lastDate
+        );
+        return friend;
+      });
+      res.status(200).json(user);
+    },
+    err => res.status(400).send(err)
+  );
 };
 
 module.exports = {

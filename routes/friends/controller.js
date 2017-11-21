@@ -1,7 +1,6 @@
 const Friend = require('../../models')().Friend;
 const Interaction = require('../../models')().Interaction;
 
-// Needs to make sure it has a friendId
 const create = (req, res) => {
   const info = Object.assign({}, req.body, { userId: req.params.userId });
   Friend.create(info).then(
@@ -42,7 +41,16 @@ const retrieve = (req, res) =>
       }
     ]
   }).then(
-    friend => res.status(200).json(friend),
+    friend => {
+      const lastDate = friend.interactions.length
+        ? friend.interactions[0].createdAt
+        : friend.createdAt;
+      friend.dataValues['strengthLost'] = Friend.calculateStrengthLost(
+        friend.decline,
+        lastDate
+      );
+      return res.status(200).json(friend);
+    },
     err => res.status(400).json(err)
   );
 
