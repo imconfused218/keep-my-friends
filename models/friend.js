@@ -11,7 +11,11 @@ module.exports = sequelize => {
     },
     strength: {
       type: Sequelize.DECIMAL,
-      defaultValue: 100
+      defaultValue: 100,
+      validate: {
+        min: 0,
+        max: 100
+      }
     },
     decline: {
       type: Sequelize.INTEGER,
@@ -33,11 +37,32 @@ module.exports = sequelize => {
     });
   };
 
+  Friend.defineScopes = models => {
+    Friend.addScope(
+      'defaultScope',
+      {
+        include: [
+          {
+            model: models.Interaction,
+            as: 'interactions'
+          }
+        ]
+      },
+      { override: true }
+    );
+  };
+
   Friend.calculateStrengthLost = (
     declineAugment,
     date,
     lossRate = CONSTANTS.TIME_PER_STRENGTH_LOSS
   ) => (Date.now() - date) / lossRate * declineAugment;
+
+  Friend.determineStrength = (oldStrength, strengthLost, power = 0) => {
+    const strength =
+      parseInt(power, 10) + parseInt(oldStrength, 10) - strengthLost;
+    return strength > 100 ? 100 : strength < 0 ? 0 : Math.floor(strength);
+  };
 
   return Friend;
 };

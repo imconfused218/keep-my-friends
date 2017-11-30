@@ -4,7 +4,10 @@ const Interaction = require('../../models')().Interaction;
 
 const create = (req, res) =>
   User.create(req.body).then(
-    user => res.status(200).json(user),
+    user => {
+      delete user.dataValues.password;
+      return res.status(200).json(user);
+    },
     err => res.status(400).json(err)
   );
 
@@ -32,24 +35,25 @@ const destroy = (req, res) =>
   });
 
 const retrieve = (req, res) => {
-  User.findById(req.params.userId, {
-    include: [
-      {
-        model: Friend,
-        as: 'friends',
-        include: [{ model: Interaction, as: 'interactions' }]
-      }
-    ]
-  }).then(
+  User.findById(req.params.userId).then(
     user => {
+      user = user.get({ plain: true });
+
       user.friends = user.friends.map(friend => {
         const lastDate = friend.interactions.length
           ? friend.interactions[0].createdAt
           : friend.createdAt;
-        friend.dataValues['strengthLost'] = Friend.calculateStrengthLost(
+
+        const strengthLost = Friend.calculateStrengthLost(
           friend.decline,
           lastDate
         );
+
+        friend.strength = Friend.determineStrength(
+          friend.strength,
+          strengthLost
+        );
+
         return friend;
       });
       res.status(200).json(user);

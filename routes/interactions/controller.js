@@ -1,12 +1,11 @@
 const Interaction = require('../../models')().Interaction;
 
-// Needs to make sure it has a interactionId
 const create = (req, res) => {
   const info = Object.assign({}, req.body, {
     userId: req.params.userId,
     friendId: req.params.friendId
   });
-  Interaction.create(info).then(
+  return Interaction.updateStrengthAndCreate(info).then(
     interaction => res.status(200).json(interaction),
     err => res.status(400).json(err)
   );

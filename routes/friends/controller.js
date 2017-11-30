@@ -33,22 +33,26 @@ const destroy = (req, res) =>
   });
 
 const retrieve = (req, res) =>
-  Friend.findById(req.params.friendId, {
-    include: [
-      {
-        model: Interaction,
-        as: 'interactions'
-      }
-    ]
-  }).then(
+  Friend.findById(req.params.friendId).then(
     friend => {
+      if (!friend) {
+        return res.status(404).json({ message: 'Friend not found' });
+      }
+
+      // Just want values for response
+      friend = friend.get({ plain: true });
+
       const lastDate = friend.interactions.length
         ? friend.interactions[0].createdAt
         : friend.createdAt;
-      friend.dataValues['strengthLost'] = Friend.calculateStrengthLost(
+
+      const strengthLost = Friend.calculateStrengthLost(
         friend.decline,
         lastDate
       );
+
+      friend.strength = Friend.determineStrength(friend.strength, strengthLost);
+
       return res.status(200).json(friend);
     },
     err => res.status(400).json(err)

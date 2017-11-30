@@ -5,6 +5,8 @@ const bodyParser = require('body-parser');
 const dbconfig = require('./dbconfig');
 const bootstrapModels = require('./models');
 
+// After Sign up (create user), create and return token in same request
+
 // Connect with DB and check connection
 const sequelize = new Sequelize(dbconfig);
 
@@ -15,7 +17,9 @@ sequelize
     err => console.error('Unable to connect to the database:', err)
   );
 
+// Dev only. Remove for Production
 //sequelize.sync({ force: true });
+
 // Initialize Models
 bootstrapModels(sequelize);
 
