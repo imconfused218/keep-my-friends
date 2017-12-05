@@ -15,8 +15,11 @@ const login = (req, res) => {
       User.verifyPassword(req.body.password, user.password).then(
         isVerified => {
           if (isVerified) {
+            // ensure no password
+            user = user.get({ plain: true });
+            delete user.password;
             Token.create({ userId: user.id, value: uuidV4() }).then(
-              token => res.status(200).json(token),
+              token => res.status(200).json({ user, token }),
               err => res.status(400).json(err)
             );
           } else {
@@ -70,9 +73,9 @@ const checkToken = (req, res, next) => {
         token.update(updated).then(updatedToken => {
           return res.status(401).json({ message: 'Token has expired' });
         });
+      } else {
+        next();
       }
-
-      next();
     },
     err => res.status(400).json(err)
   );
