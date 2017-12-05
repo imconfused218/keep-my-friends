@@ -20,6 +20,8 @@ sequelize
 // Dev only. Remove for Production
 //sequelize.sync({ force: true });
 
+// Testing
+
 // Initialize Models
 bootstrapModels(sequelize);
 
